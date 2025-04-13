@@ -3,7 +3,6 @@ package com.firdose.springbootwebweek2.springbootwebweek2.controller;
 import com.firdose.springbootwebweek2.springbootwebweek2.dto.DepartmentDto;
 import com.firdose.springbootwebweek2.springbootwebweek2.service.DepartmentService;
 import jakarta.validation.Valid;
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
