@@ -1,6 +1,7 @@
 package com.firdose.springbootwebweek2.springbootwebweek2.controller;
 
 import com.firdose.springbootwebweek2.springbootwebweek2.dto.DepartmentDto;
+import com.firdose.springbootwebweek2.springbootwebweek2.entity.DepartmentEntity;
 import com.firdose.springbootwebweek2.springbootwebweek2.service.DepartmentService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -49,4 +50,23 @@ public class DepartmentController {
     public ResponseEntity<Boolean> deleteDepartment(@PathVariable long departmentId){
         return new ResponseEntity<>(departmentService.deleteDepartment(departmentId), HttpStatus.OK);
     }
+
+    @PutMapping(path = "{departmentId}/assignManager/{employeeId}")
+    public ResponseEntity<DepartmentEntity> assignManagerToDepartment(@PathVariable long departmentId, @PathVariable long employeeId){
+        return new ResponseEntity<>(departmentService.assignManagerToDepartment(departmentId, employeeId), HttpStatus.OK);
+    }
+
+    @PutMapping(path = "{departmentId}/worker/{employeeId}")
+    public ResponseEntity<DepartmentEntity> assignWorkersToDepartment(@PathVariable long departmentId, @PathVariable long employeeId){
+        return new ResponseEntity<>(departmentService.assignWorkersToDepartment(departmentId, employeeId), HttpStatus.OK);
+    }
+
+    @PutMapping(path = "{departmentId}/freelancer/{employeeId}")
+    public ResponseEntity<DepartmentEntity> assignFreelancerToDepartment(@PathVariable long departmentId, @PathVariable long employeeId){
+        return new ResponseEntity<>(departmentService.assignFreelancerToDepartment(departmentId, employeeId), HttpStatus.OK);
+    }
+
+
+
+
 }

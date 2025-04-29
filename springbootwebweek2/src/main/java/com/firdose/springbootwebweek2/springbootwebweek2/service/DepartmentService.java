@@ -2,8 +2,10 @@ package com.firdose.springbootwebweek2.springbootwebweek2.service;
 
 import com.firdose.springbootwebweek2.springbootwebweek2.dto.DepartmentDto;
 import com.firdose.springbootwebweek2.springbootwebweek2.entity.DepartmentEntity;
+import com.firdose.springbootwebweek2.springbootwebweek2.entity.EmployeeEntity;
 import com.firdose.springbootwebweek2.springbootwebweek2.exceptions.DepartmentNotFoundException;
 import com.firdose.springbootwebweek2.springbootwebweek2.repository.DepartmentRepository;
+import com.firdose.springbootwebweek2.springbootwebweek2.repository.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.http.HttpStatusCode;
@@ -13,16 +15,19 @@ import org.springframework.ui.ModelMap;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class DepartmentService {
     private final DepartmentRepository departmentRepository;
     private final ModelMapper modelMapper;
+    private final EmployeeRepository employeeRepository;
 
-    public DepartmentService(DepartmentRepository departmentRepository, ModelMapper modelMapper) {
+    public DepartmentService(DepartmentRepository departmentRepository, ModelMapper modelMapper, EmployeeRepository employeeRepository) {
         this.departmentRepository = departmentRepository;
         this.modelMapper = modelMapper;
+        this.employeeRepository = employeeRepository;
     }
 
     public DepartmentDto createDepartment(DepartmentDto departmentDto) {
@@ -78,5 +83,52 @@ public class DepartmentService {
         });
 
         return modelMapper.map(departmentEntity, DepartmentDto.class);
+    }
+
+    public DepartmentEntity assignManagerToDepartment(long departmentId, long employeeId) {
+        Optional<DepartmentEntity> savedDepartment = departmentRepository.findById(departmentId);
+        Optional<EmployeeEntity> savedEmployee = employeeRepository.findById(employeeId);
+
+        return savedDepartment.flatMap(
+                department -> savedEmployee.map(
+                        employee -> {
+                            department.setManager(employee);
+                            DepartmentEntity departmentEntity = departmentRepository.save(department);
+                            return department;
+                        }
+                )
+        ).orElse(null);
+    }
+
+    public DepartmentEntity assignWorkersToDepartment(long departmentId, long employeeId) {
+        Optional<DepartmentEntity> savedDepartment = departmentRepository.findById(departmentId);
+        Optional<EmployeeEntity> savedEmployee = employeeRepository.findById(employeeId);
+
+        return savedDepartment.flatMap(
+                department -> savedEmployee.map(
+                        employee -> {
+                            employee.setWorkerDepartment(department);
+                            employeeRepository.save(employee);
+                            department.getWorkers().add(employee);
+                            return department;
+                        }
+                )
+        ).orElse(null);
+    }
+
+    public DepartmentEntity assignFreelancerToDepartment(long departmentId, long employeeId) {
+        Optional<DepartmentEntity> savedDepartment = departmentRepository.findById(departmentId);
+        Optional<EmployeeEntity> savedEmployee = employeeRepository.findById(employeeId);
+
+        return savedDepartment.flatMap(
+                department -> savedEmployee.map(
+                        employee -> {
+                            employee.getFreelanceDepartments().add(department);
+                            employeeRepository.save(employee);
+                            department.getFreelancers().add(employee);
+                            return department;
+                        }
+                )
+        ).orElse(null);
     }
 }
