@@ -1,12 +1,14 @@
 package com.firdose.springbootwebweek2.springbootwebweek2.advices;
 
 import com.firdose.springbootwebweek2.springbootwebweek2.exceptions.ResourceNotFoundException;
+import io.jsonwebtoken.JwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.naming.AuthenticationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +42,7 @@ public class GlobalExceptionHandler{
         return buildAPIResponseConverter(apiError);
     }
 
-    @ExceptionHandler({Exception.class})
+    @ExceptionHandler(Exception.class)
     public ResponseEntity<APIResponse<?>> handleInternalServerException(Exception exception){
         APIError apiError = APIError.builder()
                 .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -49,9 +51,32 @@ public class GlobalExceptionHandler{
         return buildAPIResponseConverter(apiError);
     }
 
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<APIResponse<?>> handleAuthenticationException(AuthenticationException ex){
+        APIError apiError = APIError.builder()
+                .httpStatus(HttpStatus.UNAUTHORIZED)
+                .message(ex.getMessage())
+                .build();
+
+        return buildAPIResponseConverter(apiError);
+    }
+
+    @ExceptionHandler(JwtException.class)
+    public ResponseEntity<APIResponse<?>> handleJwtExceptions(JwtException ex){
+        APIError apiError = APIError.builder()
+                .httpStatus(HttpStatus.UNAUTHORIZED)
+                .message(ex.getMessage())
+                .build();
+
+        return buildAPIResponseConverter(apiError);
+    }
+
     private ResponseEntity<APIResponse<?>> buildAPIResponseConverter(APIError apiError) {
         return new ResponseEntity<>(new APIResponse<>(apiError), apiError.getHttpStatus());
     }
+
+
 
 
 }
