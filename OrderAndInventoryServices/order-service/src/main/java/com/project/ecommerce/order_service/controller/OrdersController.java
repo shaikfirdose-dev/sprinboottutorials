@@ -18,6 +18,11 @@ public class OrdersController {
 
     private final OrdersService ordersService;
 
+    @GetMapping("/helloOrders")
+    public String helloOrders() {
+        return "Hello from Orders Service";
+    }
+
     @GetMapping
     public ResponseEntity<List<OrderRequestDto>> getAllOrders() {
         return ResponseEntity.ok(ordersService.getAllOrders());
