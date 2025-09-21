@@ -4,6 +4,7 @@ import com.project.ecommerce.order_service.client.InventoryFeignClient;
 import com.project.ecommerce.order_service.dto.OrderRequestDto;
 import com.project.ecommerce.order_service.dto.OrderRequestItemDto;
 import com.project.ecommerce.order_service.entity.OrderItem;
+import com.project.ecommerce.order_service.entity.OrderStatus;
 import com.project.ecommerce.order_service.entity.Orders;
 import com.project.ecommerce.order_service.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
@@ -36,11 +37,11 @@ public class OrdersService {
         Double totalPrice = inventoryFeignClient.reduceStocks(orderRequestDto);
 
         Orders order = modelMapper.map(orderRequestDto, Orders.class);
-        order.setTotalPrice(totalPrice);
-        for(OrderRequestItemDto item : orderRequestDto.getOrderItems()) {
-            OrderItem orderItem = modelMapper.map(item, OrderItem.class);
-            orderItem.setOrder(order);
+        for(OrderItem item : order.getOrderItems()) {
+            item.setOrder(order);
         }
+        order.setTotalPrice(totalPrice);
+        order.setOrderStatus(OrderStatus.CONFIRMED);
 
         Orders savedOrders = ordersRepository.save(order);
 
