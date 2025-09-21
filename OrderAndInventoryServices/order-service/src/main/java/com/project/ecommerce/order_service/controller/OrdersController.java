@@ -5,14 +5,12 @@ import com.project.ecommerce.order_service.entity.Orders;
 import com.project.ecommerce.order_service.service.OrdersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/core")
 @RequiredArgsConstructor
 public class OrdersController {
 
@@ -26,5 +24,11 @@ public class OrdersController {
     @GetMapping
     public ResponseEntity<List<OrderRequestDto>> getAllOrders() {
         return ResponseEntity.ok(ordersService.getAllOrders());
+    }
+
+    @PostMapping("/create-order")
+    public ResponseEntity<OrderRequestDto> createOrder(@RequestBody OrderRequestDto orderRequestDto) {
+        OrderRequestDto createdOrder = ordersService.createOrder(orderRequestDto);
+        return ResponseEntity.ok(createdOrder);
     }
 }

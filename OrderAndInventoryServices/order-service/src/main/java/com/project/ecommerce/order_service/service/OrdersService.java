@@ -1,9 +1,14 @@
 package com.project.ecommerce.order_service.service;
 
+import com.project.ecommerce.order_service.client.InventoryFeignClient;
 import com.project.ecommerce.order_service.dto.OrderRequestDto;
+import com.project.ecommerce.order_service.dto.OrderRequestItemDto;
+import com.project.ecommerce.order_service.entity.OrderItem;
+import com.project.ecommerce.order_service.entity.Orders;
 import com.project.ecommerce.order_service.repository.OrdersRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.query.Order;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +21,7 @@ public class OrdersService {
 
     private final OrdersRepository ordersRepository;
     private final ModelMapper modelMapper;
+    private final InventoryFeignClient inventoryFeignClient;
 
     public List<OrderRequestDto> getAllOrders() {
         log.info("Fetching all orders");
@@ -23,5 +29,21 @@ public class OrdersService {
                 .stream()
                 .map(order -> modelMapper.map(order, OrderRequestDto.class))
                 .toList();
+    }
+
+    public OrderRequestDto createOrder(OrderRequestDto orderRequestDto) {
+        log.info("Creating new order: {}", orderRequestDto);
+        Double totalPrice = inventoryFeignClient.reduceStocks(orderRequestDto);
+
+        Orders order = modelMapper.map(orderRequestDto, Orders.class);
+        order.setTotalPrice(totalPrice);
+        for(OrderRequestItemDto item : orderRequestDto.getOrderItems()) {
+            OrderItem orderItem = modelMapper.map(item, OrderItem.class);
+            orderItem.setOrder(order);
+        }
+
+        Orders savedOrders = ordersRepository.save(order);
+
+        return modelMapper.map(savedOrders, OrderRequestDto.class);
     }
 }

@@ -1,5 +1,7 @@
 package com.project.ecommerce.inventory_service.service;
 
+import com.project.ecommerce.inventory_service.dto.OrderRequestDto;
+import com.project.ecommerce.inventory_service.dto.OrderRequestItemDto;
 import com.project.ecommerce.inventory_service.dto.ProductDto;
 import com.project.ecommerce.inventory_service.entity.Product;
 import com.project.ecommerce.inventory_service.repository.ProductRepository;
@@ -7,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -31,5 +34,28 @@ public class ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with ID: " + productId));
         return modelMapper.map(product, ProductDto.class);
+    }
+
+    @Transactional
+    public Double reduceStocks(OrderRequestDto orderRequestDto) {
+        log.info("Reducing the stock for the order: {}", orderRequestDto);
+        double totalPrice = 0.0;
+
+        for(OrderRequestItemDto orderRequestItemDto : orderRequestDto.getOrderItems()){
+            Product product = productRepository.findById(orderRequestItemDto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with ID: " + orderRequestItemDto.getProductId()));
+
+            if(product.getStock() < orderRequestItemDto.getQuantity()) {
+                throw new RuntimeException("Insufficient stock for product ID: " + orderRequestItemDto.getProductId());
+            }
+
+            product.setStock(product.getStock() - orderRequestItemDto.getQuantity());
+            productRepository.save(product);
+
+            totalPrice += product.getPrice() * orderRequestItemDto.getQuantity();
+        }
+
+        return totalPrice;
+
     }
 }
