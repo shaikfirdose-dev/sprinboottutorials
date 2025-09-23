@@ -7,6 +7,8 @@ import com.project.ecommerce.order_service.entity.OrderItem;
 import com.project.ecommerce.order_service.entity.OrderStatus;
 import com.project.ecommerce.order_service.entity.Orders;
 import com.project.ecommerce.order_service.repository.OrdersRepository;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Order;
@@ -32,8 +34,10 @@ public class OrdersService {
                 .toList();
     }
 
+    @Retry(name = "inventoryRetry", fallbackMethod = "createOrderFallback")
+    @RateLimiter(name = "inventoryRateLimiter", fallbackMethod = "createOrderFallback")
     public OrderRequestDto createOrder(OrderRequestDto orderRequestDto) {
-        log.info("Creating new order: {}", orderRequestDto);
+        log.info("Calling inventory service to reduce stock");
         Double totalPrice = inventoryFeignClient.reduceStocks(orderRequestDto);
 
         Orders order = modelMapper.map(orderRequestDto, Orders.class);
@@ -44,7 +48,13 @@ public class OrdersService {
         order.setOrderStatus(OrderStatus.CONFIRMED);
 
         Orders savedOrders = ordersRepository.save(order);
+        log.info("Order created with ID: {}", savedOrders.getId());
 
         return modelMapper.map(savedOrders, OrderRequestDto.class);
+    }
+
+    public OrderRequestDto createOrderFallback(OrderRequestDto orderRequestDto, Throwable throwable) {
+        log.error("Failed to create order due to: {}. Please try again later.", throwable.getMessage());
+        return new OrderRequestDto();
     }
 }
