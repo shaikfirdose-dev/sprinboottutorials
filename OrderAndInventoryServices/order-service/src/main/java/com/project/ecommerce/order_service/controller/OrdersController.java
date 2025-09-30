@@ -17,8 +17,8 @@ public class OrdersController {
     private final OrdersService ordersService;
 
     @GetMapping("/helloOrders")
-    public String helloOrders() {
-        return "Hello from Orders Service";
+    public String helloOrders(@RequestHeader("X-User-Id") Long userId) {
+        return "Hello from Orders Service with User ID: " + userId;
     }
 
     @GetMapping
@@ -30,5 +30,17 @@ public class OrdersController {
     public ResponseEntity<OrderRequestDto> createOrder(@RequestBody OrderRequestDto orderRequestDto) {
         OrderRequestDto createdOrder = ordersService.createOrder(orderRequestDto);
         return ResponseEntity.ok(createdOrder);
+    }
+
+    @PostMapping("/cancel-order/{orderId}")
+    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId) {
+        String response = ordersService.cancelOrder(orderId);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/update-order/{orderId}")
+    public ResponseEntity<Void> updateOrder(@PathVariable Long orderId) {
+        ordersService.updateOrder(orderId);
+        return ResponseEntity.ok().build();
     }
 }

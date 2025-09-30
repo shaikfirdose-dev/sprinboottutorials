@@ -1,3 +1,6 @@
+jwt:
+  secretKey: fjdjndjbdacbkjdbvdbvkadfjwenfjweahfinfddsahbvhd
+
 server:
   port: 8080
 
@@ -17,13 +20,24 @@ spring:
             - Path=/api/v1/orders/**
           filters:
             - StripPrefix=2
+            - name: LoggingOrdersFilter
+            - name: AuthenticationGatewayFilter
+              args:
+                isEnabled: true
         - id: inventory-service
           uri: lb://inventory-service
           predicates:
             - Path=/api/v1/inventory/**
+            - name: AuthenticationGatewayFilter
           filters:
             - StripPrefix=2
 #            - RedirectTo=302, https://youtube.com
+        - id: shipping-service
+          uri: lb://shipping-service
+          predicates:
+            - Path=/api/v1/shipping/**
+          filters:
+            - StripPrefix=2
 eureka:
   client:
     service-url:

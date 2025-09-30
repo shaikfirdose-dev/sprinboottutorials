@@ -1,0 +1,36 @@
+#management:
+#  health:
+#    circuitbreakers:
+#      enabled: true
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "*"
+
+resilience4j:
+#  retry:
+#    instances:
+#      shippingServiceRetry:
+#        maxRetryAttempts: 3
+#        waitDuration: 5s
+
+  ratelimiter:
+    instances:
+      shippingServiceRateLimiter:
+        limitRefreshPeriod: 5s
+        limitForPeriod: 1
+        timeoutDuration: 1s
+
+    circuitbreaker:
+        configs:
+        default:
+            registerHealthIndicator: true
+            slidingWindowSize: 2
+            minimumNumberOfCalls: 2
+            failureRateThreshold: 50
+            waitDurationInOpenState: 5s
+            permittedNumberOfCallsInHalfOpenState: 1
+            slidingWindowType: COUNT_BASED
+        instances:
+        shippingServiceCircuitBreaker:
+            baseConfig: default

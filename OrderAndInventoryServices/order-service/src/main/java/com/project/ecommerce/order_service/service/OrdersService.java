@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.query.Order;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -58,5 +59,37 @@ public class OrdersService {
     public OrderRequestDto createOrderFallback(OrderRequestDto orderRequestDto, Throwable throwable) {
         log.error("Failed to create order due to: {}. Please try again later.", throwable.getMessage());
         return new OrderRequestDto();
+    }
+
+    public String cancelOrder(Long orderId) {
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+        if(order.getOrderStatus().equals(OrderStatus.CANCELLED)) {
+            return "Order is already cancelled.";
+        }
+
+        OrderRequestDto orderRequestDto = modelMapper.map(order, OrderRequestDto.class);
+        inventoryFeignClient.restockingInventory(orderRequestDto);
+
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        ordersRepository.save(order);
+
+        return "Order with ID: " + orderId + " has been cancelled and inventory restocked.";
+    }
+
+
+    @Transactional
+    public void updateOrder(Long orderId) {
+        Orders order = ordersRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found with ID: " + orderId));
+
+        if(order.getOrderStatus() == OrderStatus.CANCELLED) {
+            throw new RuntimeException("Cannot update a cancelled order.");
+        }
+        order.setOrderStatus(OrderStatus.SHIPPED);
+        ordersRepository.save(order);
+
+        log.info("Order with ID: {} has been updated to SHIPPED.", orderId);
     }
 }

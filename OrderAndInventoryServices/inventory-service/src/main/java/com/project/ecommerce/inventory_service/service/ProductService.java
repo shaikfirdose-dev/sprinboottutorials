@@ -58,4 +58,18 @@ public class ProductService {
         return totalPrice;
 
     }
+
+    @Transactional
+    public String restockingInventory(OrderRequestDto orderRequestDto){
+        log.info("Restocking the inventory for the order: {}", orderRequestDto);
+        for(OrderRequestItemDto orderRequestItemDto : orderRequestDto.getOrderItems()){
+            Product product = productRepository.findById(orderRequestItemDto.getProductId())
+                    .orElseThrow(() -> new RuntimeException("Product not found with ID: " + orderRequestItemDto.getProductId()));
+
+            product.setStock(product.getStock() + orderRequestItemDto.getQuantity());
+            productRepository.save(product);
+        }
+
+        return "Inventory restocked successfully";
+    }
 }
