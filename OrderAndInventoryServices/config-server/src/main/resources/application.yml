@@ -1,0 +1,20 @@
+spring.application.name: config-server
+
+spring:
+    cloud:
+        config:
+          server:
+            git:
+              uri: https://github.com/shaikfirdose-dev/ecommerce-config-server
+              username: shaikfirdose-dev
+              password: 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
+              default-label: main
+
+
+server:
+    port: 8888
+
+eureka:
+    client:
+        service-url:
+            defaultZone: http://localhost:8761/eureka

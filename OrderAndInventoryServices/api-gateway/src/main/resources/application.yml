@@ -1,47 +1,7 @@
-jwt:
-  secretKey: fjdjndjbdacbkjdbvdbvkadfjwenfjweahfinfddsahbvhd
 
-server:
-  port: 8080
 
 spring:
   application:
     name: api-gateway
-  cloud:
-    gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      routes:
-        - id: order-service
-          uri: lb://order-service
-          predicates:
-            - Path=/api/v1/orders/**
-          filters:
-            - StripPrefix=2
-            - name: LoggingOrdersFilter
-            - name: AuthenticationGatewayFilter
-              args:
-                isEnabled: true
-        - id: inventory-service
-          uri: lb://inventory-service
-          predicates:
-            - Path=/api/v1/inventory/**
-            - name: AuthenticationGatewayFilter
-          filters:
-            - StripPrefix=2
-#            - RedirectTo=302, https://youtube.com
-        - id: shipping-service
-          uri: lb://shipping-service
-          predicates:
-            - Path=/api/v1/shipping/**
-          filters:
-            - StripPrefix=2
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
-    hostname: localhost
+  config:
+    import: configserver:http://localhost:8888

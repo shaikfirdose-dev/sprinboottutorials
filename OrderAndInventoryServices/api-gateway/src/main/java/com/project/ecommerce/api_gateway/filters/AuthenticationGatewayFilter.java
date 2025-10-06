@@ -2,6 +2,7 @@ package com.project.ecommerce.api_gateway.filters;
 
 
 import com.project.ecommerce.api_gateway.service.JwtService;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -23,7 +24,7 @@ public class AuthenticationGatewayFilter extends AbstractGatewayFilterFactory<Au
     @Override
     public GatewayFilter apply(Config config) {
 
-        if(!config.isEnabled){
+        if(!config.enabled ){
             return (exchange, chain) -> chain.filter(exchange);
         }
 
@@ -46,7 +47,8 @@ public class AuthenticationGatewayFilter extends AbstractGatewayFilterFactory<Au
         };
     }
 
+    @Data
     public static class Config {
-        private boolean isEnabled;
+        private boolean enabled;
     }
 }
