@@ -5,3 +5,19 @@ spring:
     name: api-gateway
   config:
     import: configserver:http://localhost:8888
+  cloud:
+    gateway:
+      routes:
+        - id: product-service
+          uri: lb://product-service
+          predicates:
+            - Path=/products/**
+          filters:
+            -
+              args:
+                name: productServiceCircuitBreaker
+                fallbackUri: forward:/productFallback
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/orders/**
