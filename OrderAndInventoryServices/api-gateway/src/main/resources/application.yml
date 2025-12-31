@@ -1,23 +1,56 @@
+jwt:
+  secretKey: fjdjndjbdacbkjdbvdbvkadfjwenfjweahfinfddsahbvhd
 
+server:
+  port: 8080
 
 spring:
   application:
     name: api-gateway
-  config:
-    import: configserver:http://localhost:8888
   cloud:
+    config:
+      import-check:
+        enabled: false
     gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
       routes:
-        - id: product-service
-          uri: lb://product-service
-          predicates:
-            - Path=/products/**
-          filters:
-            -
-              args:
-                name: productServiceCircuitBreaker
-                fallbackUri: forward:/productFallback
         - id: order-service
           uri: lb://order-service
           predicates:
-            - Path=/orders/**
+            - Path=/api/v1/orders/**
+          filters:
+            - StripPrefix=2
+            - name: LoggingOrdersFilter
+            - name: AuthenticationGatewayFilter
+              args:
+                enabled: true
+            - name: AuthorizationGatewayFilter
+              args:
+                allowedRoles: ADMIN, SUPER_ADMIN
+
+        - id: inventory-service
+          uri: lb://inventory-service
+          predicates:
+            - Path=/api/v1/inventory/**
+          filters:
+            - StripPrefix=2
+            - name: AuthenticationGatewayFilter
+            - name: AuthorizationGatewayFilter
+
+        - id: shipping-service
+          uri: lb://shipping-service
+          predicates:
+            - Path=/api/v1/shipping/**
+          filters:
+            - StripPrefix=2
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    hostname: localhost

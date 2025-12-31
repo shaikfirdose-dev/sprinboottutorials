@@ -1,0 +1,105 @@
+version: "3.8"
+
+services:
+  inventory-db:
+    image: postgres:15
+    container_name: inventory-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Shaik@123
+      - POSTGRES_DB=inventoryDb
+    ports:
+      - "5434:5432"
+    networks:
+      - myNetwork
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+
+  order-db:
+    image: postgres:15
+    container_name: order-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Shaik@123
+      - POSTGRES_DB=orderDb
+    ports:
+      - "5435:5432"
+    networks:
+      - myNetwork
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+
+  shipping-db:
+    image: postgres:15
+    container_name: shipping-db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Shaik@123
+      - POSTGRES_DB=shippingDb
+    ports:
+      - "5433:5432"
+    networks:
+      - myNetwork
+    volumes:
+      - shipping-db-data:/var/lib/postgresql/data
+
+  eureka-server:
+    image: eureka-server:latest
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - myNetwork
+
+  api-gateway:
+    image: api-gateway:latest
+    container_name: api-gateway
+    depends_on:
+      - inventory-service
+      - order-service
+      - shipping-service
+    ports:
+      - "8080:8080"
+    networks:
+      - myNetwork
+
+  inventory-service:
+    build: .
+    image: inventory-service:latest
+    container_name: inventory-service
+    depends_on:
+      - inventory-db
+    ports:
+      - "8070:8070"
+    networks:
+      - myNetwork
+
+  order-service:
+    build: .
+    image: order-service:latest
+    container_name: order-service
+    depends_on:
+      - order-db
+    ports:
+      - "8085:8085"
+    networks:
+      - myNetwork
+
+  shipping-service:
+    build: .
+    image: shipping-service:latest
+    container_name: shipping-service
+    depends_on:
+      - shipping-db
+    ports:
+      - "8090:8090"
+    networks:
+      - myNetwork
+
+volumes:
+    inventory-db-data:
+    order-db-data:
+    shipping-db-data:
+
+networks:
+  myNetwork:
