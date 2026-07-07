@@ -1,7 +1,6 @@
 package com.project.ecommerce.order_service.controller;
 
 import com.project.ecommerce.order_service.dto.OrderRequestDto;
-import com.project.ecommerce.order_service.entity.Orders;
 import com.project.ecommerce.order_service.service.OrdersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
